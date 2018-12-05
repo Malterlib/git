@@ -197,6 +197,12 @@ http.lowSpeedLimit, http.lowSpeedTime::
 	Can be overridden by the `GIT_HTTP_LOW_SPEED_LIMIT` and
 	`GIT_HTTP_LOW_SPEED_TIME` environment variables.
 
+http.connectTimeout::
+	If the initial HTTP connection takes longer than 'http.connectTimeout'
+	the transfer is aborted.
+	Can be overridden by the `GIT_HTTP_CONNECT_TIMEOUT` environment 
+	variable.
+
 http.noEPSV::
 	A boolean which disables using of EPSV ftp command by curl.
 	This can helpful with some "poor" ftp servers which don't

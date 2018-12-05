@@ -82,6 +82,7 @@ static const char *ssl_pinnedkey;
 static const char *ssl_cainfo;
 static long curl_low_speed_limit = -1;
 static long curl_low_speed_time = -1;
+static long curl_connect_timeout = -1;
 static int curl_ftp_no_epsv;
 static const char *curl_http_proxy;
 static const char *http_proxy_authmethod;
@@ -350,7 +351,10 @@ static int http_options(const char *var, const char *value, void *cb)
 		curl_low_speed_time = (long)git_config_int(var, value);
 		return 0;
 	}
-
+	if (!strcmp("http.connecttimeout", var)) {
+		curl_connect_timeout = (long)git_config_int(var, value);
+		return 0;
+	}
 	if (!strcmp("http.noepsv", var)) {
 		curl_ftp_no_epsv = git_config_bool(var, value);
 		return 0;
@@ -894,6 +898,10 @@ static CURL *get_curl_handle(void)
 		curl_easy_setopt(result, CURLOPT_LOW_SPEED_TIME,
 				 curl_low_speed_time);
 	}
+	if (curl_connect_timeout > 0) {
+		curl_easy_setopt(result, CURLOPT_CONNECTTIMEOUT,
+				 curl_connect_timeout);
+	}
 
 	curl_easy_setopt(result, CURLOPT_MAXREDIRS, 20);
 #if LIBCURL_VERSION_NUM >= 0x071301
@@ -1020,6 +1028,7 @@ void http_init(struct remote *remote, const char *url, int proactive_auth)
 {
 	char *low_speed_limit;
 	char *low_speed_time;
+	char *connect_timeout;
 	char *normalized_url;
 	struct urlmatch_config config = { STRING_LIST_INIT_DUP };
 
@@ -1110,6 +1119,10 @@ void http_init(struct remote *remote, const char *url, int proactive_auth)
 	low_speed_time = getenv("GIT_HTTP_LOW_SPEED_TIME");
 	if (low_speed_time != NULL)
 		curl_low_speed_time = strtol(low_speed_time, NULL, 10);
+
+	connect_timeout = getenv("GIT_HTTP_CONNECT_TIMEOUT");
+	if (connect_timeout != NULL)
+		curl_connect_timeout = strtol(connect_timeout, NULL, 10);
 
 	if (curl_ssl_verify == -1)
 		curl_ssl_verify = 1;
